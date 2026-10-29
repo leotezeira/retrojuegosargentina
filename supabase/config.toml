@@ -1,0 +1,7 @@
+project_id = "dgnmaczzfxtslgfiosqr"
+
+[functions.create-license]
+verify_jwt = false
+
+[functions.redeem-license]
+verify_jwt = false

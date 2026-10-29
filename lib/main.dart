@@ -18,7 +18,7 @@ import 'package:videogame/constants.dart';
 import 'package:videogame/db/db.dart';
 import 'package:videogame/pages/home_page.dart';
 import 'package:videogame/pages/main_page.dart';
-import 'package:videogame/pages/activation_page.dart';
+import 'package:videogame/pages/activation_gate.dart';
 import 'package:videogame/util/duck_ads.dart';
 import 'package:videogame/util/duck_analytics.dart';
 import 'package:videogame/util/duck_billing.dart';
@@ -201,7 +201,7 @@ class GameApp extends StatelessWidget {
               home: isWeb
                   ? HomePage()
                   : Platform.isAndroid
-                      ? const ActivationPage()
+                      ? const ActivationGate()
                       : MainPage(),
               navigatorObservers: [
                 DuckAnalytics.observer,

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:videogame/services/license_service.dart';
 
 class ActivationPage extends StatefulWidget {
-  const ActivationPage({Key? key}) : super(key: key);
+  final VoidCallback onActivated;
+
+  const ActivationPage({Key? key, required this.onActivated}) : super(key: key);
 
   @override
   State<ActivationPage> createState() => _ActivationPageState();
@@ -11,6 +14,7 @@ class ActivationPage extends StatefulWidget {
 class _ActivationPageState extends State<ActivationPage> {
   final TextEditingController _codeController = TextEditingController();
   String? _message;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -29,11 +33,37 @@ class _ActivationPageState extends State<ActivationPage> {
       ..selection = TextSelection.collapsed(offset: clipboardData.text!.length);
   }
 
-  void _activate() {
+  Future<void> _activate() async {
+    final code = _codeController.text.trim();
+    if (code.isEmpty) {
+      setState(() => _message = 'Pega tu código de activación para continuar.');
+      return;
+    }
+
     setState(() {
-      _message = _codeController.text.trim().isEmpty
-          ? 'Pega tu código de activación para continuar.'
-          : 'La validación de claves estará disponible cuando conectemos Supabase.';
+      _isSubmitting = true;
+      _message = null;
+    });
+
+    try {
+      await LicenseService.activate(code);
+      if (mounted) {
+        widget.onActivated();
+      }
+    } on ActivationException catch (error) {
+      if (mounted) {
+        setState(() => _message = error.message);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  void _clearMessage() {
+    setState(() {
+      _message = null;
     });
   }
 
@@ -76,14 +106,20 @@ class _ActivationPageState extends State<ActivationPage> {
                       ),
                       onChanged: (_) {
                         if (_message != null) {
-                          setState(() => _message = null);
+                          _clearMessage();
                         }
                       },
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: _activate,
-                      child: const Text('Activar'),
+                      onPressed: _isSubmitting ? null : _activate,
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Activar'),
                     ),
                     if (_message != null) ...[
                       const SizedBox(height: 16),
@@ -91,9 +127,7 @@ class _ActivationPageState extends State<ActivationPage> {
                         _message!,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: _codeController.text.trim().isEmpty
-                              ? Theme.of(context).colorScheme.error
-                              : Theme.of(context).colorScheme.onSurface,
+                          color: Theme.of(context).colorScheme.error,
                         ),
                       ),
                     ],
