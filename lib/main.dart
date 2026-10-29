@@ -18,6 +18,7 @@ import 'package:videogame/constants.dart';
 import 'package:videogame/db/db.dart';
 import 'package:videogame/pages/home_page.dart';
 import 'package:videogame/pages/main_page.dart';
+import 'package:videogame/pages/activation_page.dart';
 import 'package:videogame/util/duck_ads.dart';
 import 'package:videogame/util/duck_analytics.dart';
 import 'package:videogame/util/duck_billing.dart';
@@ -197,7 +198,11 @@ class GameApp extends StatelessWidget {
               // 讲zh设置为第一项，缺省为英文
               supportedLocales: S.delegate.supportedLocales,
               navigatorKey: navigatorKey,
-              home: isWeb ? HomePage() : MainPage(),
+              home: isWeb
+                  ? HomePage()
+                  : Platform.isAndroid
+                      ? const ActivationPage()
+                      : MainPage(),
               navigatorObservers: [
                 DuckAnalytics.observer,
               ],
